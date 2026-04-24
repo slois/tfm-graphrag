@@ -62,7 +62,7 @@ def disease_context_formatter(record) -> RetrieverResultItem:
         metadata={"disease_id": disease_id, "disease_name": disease_name}
     )
 
-phenotype_retriever = VectorCypherRetriever(
+phenotype_vector_retriever = VectorCypherRetriever(
     driver=driver,
     index_name="phenotypic_feature_index",
     #fulltext_index_name="phenotypic_feature_fulltext_index",
@@ -72,7 +72,7 @@ phenotype_retriever = VectorCypherRetriever(
     result_formatter=disease_context_formatter
 )
 
-disease_retriever = VectorCypherRetriever(
+disease_vector_retriever = VectorCypherRetriever(
     driver=driver,
     index_name="disease_index",
     #fulltext_index_name="disease_fulltext_index",
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     PHENOTYPES=HP:0011686; HP:0000002; HP:0012719; HP:0010051; HP:0031432; HP:0032076; HP:0006000; HP:0005120"""
 
-    result = disease_retriever.search(
+    result = disease_vector_retriever.search(
         query_text=enriched_query,
         top_k=10
     )

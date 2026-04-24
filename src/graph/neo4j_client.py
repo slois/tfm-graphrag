@@ -4,6 +4,7 @@ from enum import Enum
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
+
 load_dotenv(override=False)
 
 driver = GraphDatabase.driver(
@@ -23,3 +24,7 @@ index_map = {
     EntityType.DISEASE: ("disease_index", None, "biolink:Disease"),  # "disease_fulltext_index"
     EntityType.GENE: ("gene_index", None, "biolink:Gene"),
 }
+
+if __name__ == "__main__":
+    from neo4j_graphrag.schema import get_schema
+    print(get_schema(driver, sanitize=True))

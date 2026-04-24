@@ -1,0 +1,1024 @@
+[
+  {
+    "id": 1,
+    "category": "factual",
+    "difficulty": "easy",
+    "question": "What is the symbol of the gene with id {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id}) RETURN g.symbol",
+    "expected_answer_type": "string",
+    "reasoning_paths": [{"path": ["biolink:Gene"], "relations": []}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id}) RETURN path LIMIT 5"
+  },
+  {
+    "id": 2,
+    "category": "factual",
+    "difficulty": "easy",
+    "question": "What is the name of the disease with id {disease_id}?",
+    "cypher_template": "MATCH (d:`biolink:Disease` {id: $disease_id}) RETURN d.name",
+    "expected_answer_type": "string",
+    "reasoning_paths": [{"path": ["biolink:Disease"], "relations": []}],
+    "subgraph_cypher": "MATCH path=(d:`biolink:Disease` {id: $disease_id}) RETURN path LIMIT 5"
+  },
+  {
+    "id": 3,
+    "category": "factual",
+    "difficulty": "easy",
+    "question": "What is the description of phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN p.description",
+    "expected_answer_type": "string",
+    "reasoning_paths": [{"path": ["biolink:PhenotypicFeature"], "relations": []}],
+    "subgraph_cypher": "MATCH path=(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN path LIMIT 5"
+  },
+  {
+    "id": 4,
+    "category": "factual",
+    "difficulty": "easy",
+    "question": "What is the name of the biological process {process_id}?",
+    "cypher_template": "MATCH (bp:`biolink:BiologicalProcess` {id: $process_id}) RETURN bp.name",
+    "expected_answer_type": "string",
+    "reasoning_paths": [{"path": ["biolink:BiologicalProcess"], "relations": []}],
+    "subgraph_cypher": "MATCH path=(bp:`biolink:BiologicalProcess` {id: $process_id}) RETURN path LIMIT 5"
+  },
+  {
+    "id": 5,
+    "category": "factual",
+    "difficulty": "easy",
+    "question": "What is the name of the pathway {pathway_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id}) RETURN pw.name",
+    "expected_answer_type": "string",
+    "reasoning_paths": [{"path": ["biolink:Pathway"], "relations": []}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id}) RETURN path LIMIT 5"
+  },
+
+  {
+    "id": 6,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which diseases are associated with the gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN d.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease"], "relations": ["biolink:gene_associated_with_condition"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 7,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which phenotypes are associated with gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN p.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:PhenotypicFeature"], "relations": ["biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 8,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which genes interact with gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`) RETURN g2.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Gene"], "relations": ["biolink:interacts_with"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 9,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which pathways does gene {gene_id} participate in?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN pw.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Pathway"], "relations": ["biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 10,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which biological processes involve gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess`) RETURN bp.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:BiologicalProcess"], "relations": ["biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess`) RETURN path LIMIT 50"
+  },
+
+  {
+    "id": 11,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which phenotypes are associated with diseases caused by gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN DISTINCT p.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease","biolink:PhenotypicFeature"], "relations": ["biolink:causes","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+
+  {
+    "id": 12,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which genes are associated with diseases that have phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`) RETURN DISTINCT g.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:PhenotypicFeature","biolink:Disease","biolink:Gene"], "relations": ["biolink:has_phenotype","biolink:gene_associated_with_condition"]}],
+    "subgraph_cypher": "MATCH path=(p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 13,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which variants are associated with gene {gene_id}?",
+    "cypher_template": "MATCH (v:`biolink:SequenceVariant`)-[:`biolink:is_sequence_variant_of`]->(g:`biolink:Gene` {id: $gene_id}) RETURN v.id",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:SequenceVariant","biolink:Gene"], "relations": ["biolink:is_sequence_variant_of"]}],
+    "subgraph_cypher": "MATCH path=(v:`biolink:SequenceVariant`)-[:`biolink:is_sequence_variant_of`]->(g:`biolink:Gene` {id: $gene_id}) RETURN path LIMIT 50"
+  },
+  {
+    "id": 14,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which diseases are caused by gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`) RETURN d.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease"], "relations": ["biolink:causes"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 15,
+    "category": "one_hop",
+    "difficulty": "medium",
+    "question": "Which anatomical entities express gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:expressed_in`]->(a:`biolink:AnatomicalEntity`) RETURN a.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:AnatomicalEntity"], "relations": ["biolink:expressed_in"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:expressed_in`]->(a:`biolink:AnatomicalEntity`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 16,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which diseases are associated with genes that interact with gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN DISTINCT d.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Gene","biolink:Disease"], "relations": ["biolink:interacts_with","biolink:gene_associated_with_condition"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 17,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which pathways are linked to diseases associated with gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g2:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN DISTINCT pw.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease","biolink:Gene","biolink:Pathway"], "relations": ["biolink:gene_associated_with_condition","biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g2:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 18,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which biological processes are linked to diseases caused by gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`)-[:`biolink:has_participant`]->(bp:`biolink:BiologicalProcess`) RETURN DISTINCT bp.name",
+    "params": [
+      {"gene_id": "HGNC:11187"},
+      {"gene_id": "HGNC:15454"},
+      {"gene_id": "HGNC:17271"},
+      {"gene_id": "HGNC:10023"},
+      {"gene_id": "HGNC:9829"},
+      {"gene_id": "HGNC:9644"},
+      {"gene_id": "HGNC:9282"},
+      {"gene_id": "HGNC:7989"},
+      {"gene_id": "HGNC:6842"},
+      {"gene_id": "HGNC:6840"},
+      {"gene_id": "HGNC:6742"},
+      {"gene_id": "HGNC:6407"},
+      {"gene_id": "HGNC:5173"},
+      {"gene_id": "HGNC:1097"},
+      {"gene_id": "HGNC:17646"},
+      {"gene_id": "HGNC:23038"}
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease","biolink:BiologicalProcess"], "relations": ["biolink:causes","biolink:has_participant"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:causes`]->(d:`biolink:Disease`)-[:`biolink:has_participant`]->(bp:`biolink:BiologicalProcess`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 19,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which genes are associated with phenotypes linked to disease {disease_id}?",
+    "cypher_template": "MATCH (d:`biolink:Disease` {id: $disease_id})-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`)<-[:`biolink:has_phenotype`]-(g:`biolink:Gene`) RETURN DISTINCT g.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Disease","biolink:PhenotypicFeature","biolink:Gene"], "relations": ["biolink:has_phenotype","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(d:`biolink:Disease` {id: $disease_id})-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`)<-[:`biolink:has_phenotype`]-(g:`biolink:Gene`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 20,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which variants are linked to diseases associated with gene {gene_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)<-[:`biolink:causes`]-(v:`biolink:SequenceVariant`) RETURN DISTINCT v.id",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Disease","biolink:SequenceVariant"], "relations": ["biolink:gene_associated_with_condition","biolink:causes"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)<-[:`biolink:causes`]-(v:`biolink:SequenceVariant`) RETURN path LIMIT 50"
+  },
+
+  {
+    "id": 21,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes are associated with diseases that have phenotype {phenotype_id} and involve pathway {pathway_id}?",
+    "cypher_template": "MATCH (p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway` {id: $pathway_id}) RETURN DISTINCT g.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:PhenotypicFeature","biolink:Disease","biolink:Gene","biolink:Pathway"], "relations": ["biolink:has_phenotype","biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway` {id: $pathway_id}) RETURN path LIMIT 50"
+  },
+
+  {
+    "id": 22,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which diseases involve pathway {pathway_id} and have phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN DISTINCT d.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:Disease","biolink:PhenotypicFeature"], "relations": ["biolink:participates_in","biolink:gene_associated_with_condition","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 23,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which variants affect genes involved in pathway {pathway_id} and linked to disease {disease_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)<-[:`biolink:is_sequence_variant_of`]-(v:`biolink:SequenceVariant`)-[:`biolink:causes`]->(d:`biolink:Disease` {id: $disease_id}) RETURN DISTINCT v.id",
+    "params": [
+      {
+        "disease_id": "MONDO:0010278",
+        "pathway_id": "Reactome:R-HSA-5619092"
+      },
+      {
+        "disease_id": "MONDO:0010278",
+        "pathway_id": "Reactome:R-HSA-425986"
+      },
+      {
+        "disease_id": "MONDO:0011229",
+        "pathway_id": "Reactome:R-HSA-1614517"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-190872"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-190861"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-190827"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-190704"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-163125"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9662361"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9662360"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9609523"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-1296072"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9013422"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9013420"
+      },
+      {
+        "disease_id": "MONDO:0019497",
+        "pathway_id": "Reactome:R-HSA-9013418"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:SequenceVariant","biolink:Disease"], "relations": ["biolink:participates_in","biolink:is_sequence_variant_of","biolink:causes"]}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)<-[:`biolink:is_sequence_variant_of`]-(v:`biolink:SequenceVariant`)-[:`biolink:causes`]->(d:`biolink:Disease` {id: $disease_id}) RETURN path LIMIT 50"
+  },
+  {
+    "id": 24,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes are linked to diseases involving biological process {process_id} and pathway {pathway_id}?",
+    "cypher_template": "MATCH (bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:has_participant`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway` {id: $pathway_id}) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "pathway_id": "Reactome:R-HSA-6782135",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5696400",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5696395",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6783310",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5685938",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-8951664",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6796648",
+        "process_id": "GO:0070914"
+      }
+    ],
+
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:BiologicalProcess","biolink:Disease","biolink:Gene","biolink:Pathway"], "relations": ["biolink:has_participant","biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:has_participant`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 25,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which diseases are linked to genes expressed in anatomical entity {anatomy_id} and having phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (a:`biolink:AnatomicalEntity` {id: $anatomy_id})<-[:`biolink:expressed_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN DISTINCT d.name",
+    "params": [
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0100840"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0012378"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0011903"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0009906"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0009891"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0004322"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0002167"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0002007"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0001935"
+      },
+      {
+        "anatomy_id": "UBERON:0035834",
+        "phenotype_id": "HP:0001831"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:AnatomicalEntity","biolink:Gene","biolink:Disease","biolink:PhenotypicFeature"], "relations": ["biolink:expressed_in","biolink:gene_associated_with_condition","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(a:`biolink:AnatomicalEntity` {id: $anatomy_id})<-[:`biolink:expressed_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 26,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes participate in biological pathways {pathway_id} and are associated with diseases presenting the phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]-(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "pathway_id": "Reactome:R-HSA-187024",
+        "phenotype_id": "HP:0010829"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-212436",
+        "phenotype_id": "HP:0001627"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-3359454",
+        "phenotype_id": "HP:0001252"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5655253",
+        "phenotype_id": "HP:0000465"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9710421",
+        "phenotype_id": "HP:0005616"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5632684",
+        "phenotype_id": "HP:0008936"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9954709",
+        "phenotype_id": "HP:0000980"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5654706",
+        "phenotype_id": "HP:0000272"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-212676",
+        "phenotype_id": "HP:0002120"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-3214841",
+        "phenotype_id": "HP:0002119"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5693571",
+        "phenotype_id": "HP:0000130"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9033241",
+        "phenotype_id": "HP:0001510"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5607764",
+        "phenotype_id": "HP:0009824"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-8856828",
+        "phenotype_id": "HP:0000164"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5658442",
+        "phenotype_id": "HP:0001596"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:Disease","biolink:Gene"], "relations": ["biolink:participates_in","biolink:gene_associated_with_condition","biolink:interacts_with"]}],
+    "subgraph_cypher": "MATCH path = (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]-(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN path LIMIT 50"
+  },
+  {
+    "id": 27,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which phenotypes are associated with genes interacting with gene {gene_id} and involved in pathway {pathway_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway` {id: $pathway_id}) MATCH (g2)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN DISTINCT p.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Gene","biolink:Pathway","biolink:PhenotypicFeature"], "relations": ["biolink:interacts_with","biolink:participates_in","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 28,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which diseases are linked to variants affecting genes involved in biological process {process_id}?",
+    "cypher_template": "MATCH (bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)<-[:`biolink:is_sequence_variant_of`]-(v:`biolink:SequenceVariant`)-[:`biolink:causes`]->(d:`biolink:Disease`) RETURN DISTINCT d.name",
+    "params": [
+      {
+        "process_id": "Reactome:R-HSA-5619092"
+      },
+      {
+        "process_id": "Reactome:R-HSA-425986"
+      },
+      {
+        "process_id": "Reactome:R-HSA-1614517"
+      },
+      {
+        "process_id": "Reactome:R-HSA-190872"
+      },
+      {
+        "process_id": "Reactome:R-HSA-190861"
+      },
+      {
+        "process_id": "Reactome:R-HSA-190827"
+      },
+      {
+        "process_id": "Reactome:R-HSA-190704"
+      },
+      {
+        "process_id": "Reactome:R-HSA-163125"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9662361"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9662360"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:BiologicalProcess","biolink:Gene","biolink:SequenceVariant","biolink:Disease"], "relations": ["biolink:participates_in","biolink:is_sequence_variant_of","biolink:causes"]}],
+    "subgraph_cypher": "MATCH path=(bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)<-[:`biolink:is_sequence_variant_of`]-(v:`biolink:SequenceVariant`)-[:`biolink:causes`]->(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 29,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes participate in biological process {process_id} and are associated with diseases that share phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess` {id: $process_id}) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "process_id": "Reactome:R-HSA-5658442",
+        "phenotype_id": "HP:0000286"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5621575",
+        "phenotype_id": "HP:0011947"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5696400",
+        "phenotype_id": "HP:0005301"
+      },
+      {
+        "process_id": "Reactome:R-HSA-73863",
+        "phenotype_id": "HP:0000160"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9013423",
+        "phenotype_id": "HP:0001251"
+      },
+      {
+        "process_id": "Reactome:R-HSA-512988",
+        "phenotype_id": "HP:0011675"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5654687",
+        "phenotype_id": "HP:0001508"
+      },
+      {
+        "process_id": "Reactome:R-HSA-6782135",
+        "phenotype_id": "HP:0001508"
+      },
+      {
+        "process_id": "Reactome:R-HSA-113507",
+        "phenotype_id": "HP:0012471"
+      },
+      {
+        "process_id": "Reactome:R-HSA-8983432",
+        "phenotype_id": "HP:0012209"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5655253",
+        "phenotype_id": "HP:0002282"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9840310",
+        "phenotype_id": "HP:0012469"
+      },
+      {
+        "process_id": "Reactome:R-HSA-2029482",
+        "phenotype_id": "HP:0002141"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9034864",
+        "phenotype_id": "HP:0004322"
+      },
+      {
+        "process_id": "Reactome:R-HSA-1912408",
+        "phenotype_id": "HP:0002553"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [
+      {
+        "path": [
+          "biolink:PhenotypicFeature",
+          "biolink:Disease",
+          "biolink:Gene",
+          "biolink:BiologicalProcess"
+        ],
+        "relations": [
+          "biolink:has_phenotype",
+          "biolink:gene_associated_with_condition",
+          "biolink:participates_in"
+        ]
+      }
+    ],
+    "subgraph_cypher": "MATCH path=(p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 30,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which phenotypes are associated with genes affected by variant {variant_id}?",
+    "cypher_template": "MATCH (v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:is_sequence_variant_of`]->(g:`biolink:Gene`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN DISTINCT p.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:SequenceVariant","biolink:Gene","biolink:PhenotypicFeature"], "relations": ["biolink:is_sequence_variant_of","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:is_sequence_variant_of`]->(g:`biolink:Gene`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 31,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which diseases are associated with phenotypes is a manifestation of variant {variant_id}?",
+    "cypher_template": "MATCH (v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:contributes_to`]->(p:`biolink:PhenotypicFeature`)<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`) RETURN DISTINCT d.name",
+    "params": [
+      {
+        "variant_id": "CLINVAR:1686792"
+      },
+      {
+        "variant_id": "CLINVAR:1686789"
+      },
+      {
+        "variant_id": "CLINVAR:1686785"
+      },
+      {
+        "variant_id": "CLINVAR:7951"
+      },
+      {
+        "variant_id": "CLINVAR:2505295"
+      },
+      {
+        "variant_id": "CLINVAR:2429757"
+      },
+      {
+        "variant_id": "CLINVAR:7946"
+      },
+      {
+        "variant_id": "CLINVAR:7956"
+      },
+      {
+        "variant_id": "CLINVAR:7954"
+      },
+      {
+        "variant_id": "CLINVAR:1686795"
+      },
+      {
+        "variant_id": "CLINVAR:1342203"
+      },
+      {
+        "variant_id": "CLINVAR:1342202"
+      },
+      {
+        "variant_id": "CLINVAR:1342963"
+      },
+      {
+        "variant_id": "CLINVAR:7949"
+      },
+      {
+        "variant_id": "CLINVAR:7952"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:SequenceVariant","biolink:PhenotypicFeature","biolink:Disease"], "relations": ["biolink:has_phenotype","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`)<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 32,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which genes are associated with diseases linked to variant {variant_id}?",
+    "cypher_template": "MATCH (v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:causes`]->(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "variant_id": "CLINVAR:167702"
+      },
+      {
+        "variant_id": "CLINVAR:95378"
+      },
+      {
+        "variant_id": "CLINVAR:207248"
+      },
+      {
+        "variant_id": "CLINVAR:504502"
+      },
+      {
+        "variant_id": "CLINVAR:496427"
+      },
+      {
+        "variant_id": "CLINVAR:214322"
+      },
+      {
+        "variant_id": "CLINVAR:2323"
+      },
+      {
+        "variant_id": "CLINVAR:504504"
+      },
+      {
+        "variant_id": "CLINVAR:2317"
+      },
+      {
+        "variant_id": "CLINVAR:985518"
+      },
+      {
+        "variant_id": "CLINVAR:489373"
+      },
+      {
+        "variant_id": "CLINVAR:624624"
+      },
+      {
+        "variant_id": "CLINVAR:194555"
+      },
+      {
+        "variant_id": "CLINVAR:253297"
+      },
+      {
+        "variant_id": "CLINVAR:207024"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:SequenceVariant","biolink:Disease","biolink:Gene"], "relations": ["biolink:causes","biolink:gene_associated_with_condition"]}],
+    "subgraph_cypher": "MATCH path=(v:`biolink:SequenceVariant` {id: $variant_id})-[:`biolink:causes`]->(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 33,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which pathways involve genes associated with disease {disease_id}?",
+    "cypher_template": "MATCH (d:`biolink:Disease` {id: $disease_id})<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN DISTINCT pw.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Disease","biolink:Gene","biolink:Pathway"], "relations": ["biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(d:`biolink:Disease` {id: $disease_id})<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 34,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which biological processes involve genes associated with disease {disease_id}?",
+    "cypher_template": "MATCH (d:`biolink:Disease` {id: $disease_id})<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess`) RETURN DISTINCT bp.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Disease","biolink:Gene","biolink:BiologicalProcess"], "relations": ["biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(d:`biolink:Disease` {id: $disease_id})<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(bp:`biolink:BiologicalProcess`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 35,
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "question": "Which genes are associated with diseases that involve pathway {pathway_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN DISTINCT g.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:Disease"], "relations": ["biolink:participates_in","biolink:gene_associated_with_condition"]}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 36,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes participate in pathways linked to diseases presenting phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN DISTINCT g.symbol",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:PhenotypicFeature","biolink:Disease","biolink:Gene","biolink:Pathway"], "relations": ["biolink:has_phenotype","biolink:gene_associated_with_condition","biolink:participates_in"]}],
+    "subgraph_cypher": "MATCH path=(p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:has_phenotype`]-(d:`biolink:Disease`)<-[:`biolink:gene_associated_with_condition`]-(g:`biolink:Gene`)-[:`biolink:participates_in`]->(pw:`biolink:Pathway`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 37,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which diseases involve genes interacting with gene {gene_id} and associated with phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN DISTINCT d.name",
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Gene","biolink:Gene","biolink:Disease","biolink:PhenotypicFeature"], "relations": ["biolink:interacts_with","biolink:gene_associated_with_condition","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(g:`biolink:Gene` {id: $gene_id})-[:`biolink:interacts_with`]->(g2:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 38,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which variants contribute to diseases involving pathway {pathway_id} and phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature` {id: $phenotype_id})<-[:`biolink:contributes_to`]-(v:`biolink:SequenceVariant`) RETURN DISTINCT v.id",
+    "params": [
+      {
+        "pathway_id": "Reactome:R-HSA-9656223",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-8862803",
+        "phenotype_id": "HP:0001644"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9837999",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-1169092",
+        "phenotype_id": "HP:0002092"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9680350",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-2500257",
+        "phenotype_id": "HP:0001087"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-9013404",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6787450",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-72706",
+        "phenotype_id": "HP:0001087"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-2179392",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5627123",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-2564830",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5689880",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6783310",
+        "phenotype_id": "HP:0001639"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-381340",
+        "phenotype_id": "HP:0001639"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:Disease","biolink:PhenotypicFeature","biolink:SequenceVariant"], "relations": ["biolink:participates_in","biolink:gene_associated_with_condition","biolink:has_phenotype","biolink:has_phenotype"]}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature`)<-[:`biolink:contributes_to`]-(v:`biolink:SequenceVariant`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 39,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes are associated with diseases involving both pathway {pathway_id} and biological process {process_id}?",
+    "cypher_template": "MATCH (pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_participant`]->(bp:`biolink:BiologicalProcess` {id: $process_id}) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "pathway_id": "Reactome:R-HSA-6782135",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5696400",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5696395",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6783310",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5685938",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-8951664",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-6796648",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5696394",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-5689880",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-3108214",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-77075",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-76042",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-75955",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-75953",
+        "process_id": "GO:0070914"
+      },
+      {
+        "pathway_id": "Reactome:R-HSA-73863",
+        "process_id": "GO:0070914"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [{"path": ["biolink:Pathway","biolink:Gene","biolink:Disease","biolink:BiologicalProcess"], "relations": ["biolink:participates_in","biolink:gene_associated_with_condition","biolink:has_participant"]}],
+    "subgraph_cypher": "MATCH path=(pw:`biolink:Pathway` {id: $pathway_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_participant`]->(bp:`biolink:BiologicalProcess`) RETURN path LIMIT 50"
+  },
+  {
+    "id": 40,
+    "category": "multi_entity",
+    "difficulty": "very_hard",
+    "question": "Which genes participate in biological process {process_id} and are associated with diseases that present phenotype {phenotype_id}?",
+    "cypher_template": "MATCH (bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(p:`biolink:PhenotypicFeature` {id: $phenotype_id}) RETURN DISTINCT g.symbol",
+    "params": [
+      {
+        "process_id": "Reactome:R-HSA-9656223",
+        "phenotype_id": "HP:0004493"
+      },
+      {
+        "process_id": "Reactome:R-HSA-6782135",
+        "phenotype_id": "HP:0000958"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9818027",
+        "phenotype_id": "HP:0000670"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5610787",
+        "phenotype_id": "HP:0010297"
+      },
+      {
+        "process_id": "Reactome:R-HSA-352230",
+        "phenotype_id": "HP:0012444"
+      },
+      {
+        "process_id": "Reactome:R-HSA-159231",
+        "phenotype_id": "HP:0001285"
+      },
+      {
+        "process_id": "Reactome:R-HSA-8951664",
+        "phenotype_id": "HP:0001260"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5653890",
+        "phenotype_id": "HP:0000568"
+      },
+      {
+        "process_id": "Reactome:R-HSA-110314",
+        "phenotype_id": "HP:0001250"
+      },
+      {
+        "process_id": "Reactome:R-HSA-1502540",
+        "phenotype_id": "HP:0000871"
+      },
+      {
+        "process_id": "Reactome:R-HSA-525793",
+        "phenotype_id": "HP:0000369"
+      },
+      {
+        "process_id": "Reactome:R-HSA-9009391",
+        "phenotype_id": "HP:0005293"
+      },
+      {
+        "process_id": "Reactome:R-HSA-5693607",
+        "phenotype_id": "HP:0000028"
+      },
+      {
+        "process_id": "Reactome:R-HSA-445095",
+        "phenotype_id": "HP:0001328"
+      },
+      {
+        "process_id": "Reactome:R-HSA-164843",
+        "phenotype_id": "HP:0000252"
+      }
+    ],
+    "expected_answer_type": "list",
+    "reasoning_paths": [
+      {
+        "path": [
+          "biolink:BiologicalProcess",
+          "biolink:Gene",
+          "biolink:Disease",
+          "biolink:PhenotypicFeature"
+        ],
+        "relations": [
+          "biolink:participates_in",
+          "biolink:gene_associated_with_condition",
+          "biolink:has_phenotype"
+        ]
+      }
+    ],
+    "subgraph_cypher": "MATCH path=(bp:`biolink:BiologicalProcess` {id: $process_id})<-[:`biolink:participates_in`]-(g:`biolink:Gene`)-[:`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`)-[:`biolink:has_phenotype`]->(ph:`biolink:PhenotypicFeature`) RETURN path LIMIT 50"
+  }
+]

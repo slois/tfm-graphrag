@@ -45,14 +45,15 @@ class EntityLinkingRetriever(Retriever):
         enriched_query = replace_substrings(query_text, replacements=phenotypes + diseases + genes,
                                             insert_formatter=lambda x: f"[{x['node_id']}, {x['label']}]")
 
+        enriched_query = f"{enriched_query}\n\n--- Resolved entities\n"
         if len(phenotype_onto_terms) > 0:
-            enriched_query = f"{enriched_query}\nPHENOTYPES={'; '.join(phenotype_onto_terms)}\n"
+            enriched_query = f"{enriched_query}\nhpo_ids=[{', '.join(phenotype_onto_terms)}]\n"
 
         if len(disease_onto_terms) > 0:
-            enriched_query = f"{enriched_query}\nDISEASES={'; '.join(disease_onto_terms)}"
+            enriched_query = f"{enriched_query}\nmondo_ids=[{', '.join(disease_onto_terms)}]"
 
         if len(gene_ids) > 0:
-            enriched_query = f"{enriched_query}\nGENES={'; '.join(gene_ids)}"
+            enriched_query = f"{enriched_query}\nhgnc_ids=[{', '.join(gene_ids)}]"
 
         return enriched_query
 

@@ -17,3 +17,9 @@ ner_llm = ChatOpenAI(
     model=os.environ.get("OPENAI_MODEL_NAME"),
     temperature=0.0
 )
+
+t2c_llm = OpenAILLM(
+    api_key=os.environ.get("OPENAI_API_KEY"),
+    model_name=os.environ.get("T2C_OPENAI_MODEL_NAME"),
+    model_params={'temperature': 0.0}
+)
