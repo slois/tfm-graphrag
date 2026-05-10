@@ -16,7 +16,7 @@ FACTUAL_EXAMPLES = [
 MULTIHOP_EXAMPLES = [
 
     # ── 2 saltos: Gen → Enfermedad → Fenotipo ─────────────────────────────────
-    "USER INPUT: 'What phenotypes are associated with diseases caused by CREBBP?' "
+    "USER INPUT: 'What phenotypes are linked with diseases caused by CREBBP?' "
     "CYPHER: "
     "MATCH (g:`biolink:Gene` {symbol: 'CREBBP', in_taxon: 'NCBITaxon:9606'}) "
     "-[:`biolink:causes`|`biolink:gene_associated_with_condition`]->(d:`biolink:Disease`) "
@@ -35,7 +35,7 @@ MULTIHOP_EXAMPLES = [
     "MATCH (d)-[:`biolink:has_phenotype`]->"
     "(p2:`biolink:PhenotypicFeature` {id: 'HP:0001249'}) "
     "MATCH (g:`biolink:Gene` {in_taxon: 'NCBITaxon:9606'})"
-    "-[:`biolink:causes`|`biolink:gene_associated_with_condition`]->(d) "
+    "-[:`biolink:gene_associated_with_condition`]->(d) "
     "RETURN DISTINCT g.id AS gene_id, g.symbol AS symbol, "
     "d.name AS disease, d.id AS disease_id "
     "ORDER BY symbol LIMIT 50",

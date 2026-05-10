@@ -15,9 +15,31 @@ class EntityLinker(object):
             for entity_type in self.index_map.keys():
                 entities = getattr(mentions, entity_type)
                 for mention in entities:
-                    entity = self._link_single(session, mention.mention, mention.type.lower(), threshold)
+                    entity = self._link_single(session, mention.mention, entity_type, threshold)
                     results[entity_type].append(entity)
         return results
+
+    def vector_search(self, session, mention: str, v_index: str, namespace: str, threshold: float, top_k: int):
+        embedding = self._embedder.embed_query(mention)
+        result = session.run(f"""
+        CALL db.index.vector.queryNodes($index, $top_k, $emb)
+        YIELD node, score
+        WHERE score > $threshold AND node.namespace = $namespace
+        RETURN node.id AS id, node.name AS name, node.namespace as namespace, score
+        ORDER BY score DESC
+        """, index=v_index, emb=embedding, threshold=threshold, top_k=top_k, namespace=namespace)
+        return result.data()
+
+    @staticmethod
+    def fulltext_search(session, mention: str, ft_index: str, threshold: float = 1.0):
+        result = session.run(f"""
+                        CALL db.index.fulltext.queryNodes($index, $mention)
+                        YIELD node, score
+                        WHERE score > $threshold
+                        RETURN node.id AS id, node.name AS name, score
+                        ORDER BY score DESC
+                    """, index=ft_index, mention=mention, threshold=threshold)
+        return result.data()
 
     def _link_single(self, session, mention: str, entity_type: str, threshold: float):
         v_index, ft_index, label = self.index_map[entity_type]
@@ -76,9 +98,9 @@ class MentionExtractor(object):
     PROMPT = """Extract biomedical entity mentions from the user query.
     Return ONLY valid JSON, no explanation:
     {{
-        "phenotypes": ["mention1", "mention2"],
-        "diseases": ["mention1"],
-        "genes": ["mention1", "mention2"]
+        "biolink:PhenotypicFeature": ["mention1", "mention2"],
+        "biolink:Disease": ["mention1"],
+        "biolink:Gene": ["mention1", "mention2"]
     }}
     Rules:
     - phenotypes: clinical signs, symptoms, HPO terms

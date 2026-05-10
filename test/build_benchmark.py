@@ -7,6 +7,7 @@ from typing import Dict, List, Any, Optional
 
 from neo4j.exceptions import CypherSyntaxError
 from pydantic import BaseModel, Field
+from tqdm import tqdm
 
 from src.graph.neo4j_client import driver
 
@@ -35,11 +36,21 @@ class BenchmarkEntry(BaseModel):
     question: str
     category: QuestionCategory
     difficulty: QuestionDifficulty
-    params: Optional[List[Dict[str, str]]] = Field(default_factory=dict)
+    params: Optional[List[Dict[str, str]]] = Field(default_factory=list)
+    query_params: Optional[Dict[str, str]] = Field(default_factory=dict)
     cypher_template: str
     expected_answer_type: AnswerType
     reasoning_paths: List[Dict[str, Any]]
     subgraph_cypher: str
+    ground_truth: Optional[List[str]] = Field(default_factory=list)
+
+    @property
+    def question_instantiated(self) -> str:
+        question = self.question
+        for k, v in self.query_params.items():
+            question = question.replace(f"{{{k}}}", v)
+        return question
+
 
 class BenchmarkDataset(BaseModel):
     items: List[BenchmarkEntry]
@@ -49,6 +60,24 @@ class BenchmarkDataset(BaseModel):
         with open(file, 'r') as j:
             entry_data = json.load(j)
             return BenchmarkDataset(items=entry_data)
+
+class BenchmarkResultItem(BaseModel):
+    id: int
+    question: str
+    category: QuestionCategory
+    difficulty: QuestionDifficulty
+    expected_answer_type: AnswerType
+    ground_truth: List[str]
+    model_answer: str
+    elapsed_time: float
+    tools_selected: List[str]
+
+class BenchmarkResult(BaseModel):
+    items: Optional[List[BenchmarkResultItem]] = Field(default_factory=list)
+
+    def save(self, output: str):
+        with open(output, 'w') as out:
+            json.dump(self.model_dump(), out, indent=2)
 
 
 def sample_nodes(session, label, n=50):
@@ -158,16 +187,17 @@ def normalize_answer(records):
             if isinstance(v, list):
                 values.extend(v)
             else:
-                values.append(v)
+                if v is not None and v not in values:
+                    values.append(v)
 
     # limpiar None + duplicados
-    return list(set([v for v in values if v is not None]))
+    return [v for v in values if v is not None]
 
 def build_ground_truth(dataset: BenchmarkDataset, pools, max_tries: int =50):
     enriched = []
     skipped = []
 
-    for item in dataset.items:
+    for item in tqdm(dataset.items):
         success = False
 
         for _ in range(max_tries):
@@ -187,7 +217,7 @@ def build_ground_truth(dataset: BenchmarkDataset, pools, max_tries: int =50):
 
                 enriched.append({
                     **item.__dict__,
-                    "params": params,
+                    "query_params": params,
                     "ground_truth": answer,
                     "subgraph_ground_truth": subgraph
                 })

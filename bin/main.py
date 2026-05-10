@@ -8,7 +8,7 @@ from neo4j_graphrag.generation import RagTemplate, GraphRAG
 from neo4j_graphrag.retrievers import ToolsRetriever
 
 from data.prompts import TOOLS_RETRIEVER_SYSTEM_INSTRUCTIONS, RAG_TEMPLATE
-from src.core.tools.gene import got
+from src.core.ner import NamedEntityRecognition
 from src.data_models.entity_recognition import QueryExtraction
 from src.embedders import embedder
 from src.graph.neo4j_client import driver, index_map
@@ -17,9 +17,49 @@ from src.retrievers.entity_linker_retriever import EntityLinkingRetriever
 from src.tools import disease_context_tool, gene_similarity_tool, disease_similarity_tool, disease_vector_context_tool, \
     one_hop_tool, multihop_tool, factual_tool
 
+from langchain_community.callbacks import get_openai_callback
+
+
+
+class DiMonarchKG(object):
+    def __init__(self):
+        self.ner = NamedEntityRecognition(driver=driver, embedder=embedder, llm=ner_llm, model=QueryExtraction) #ner_llm
+
+        tools_retriever = ToolsRetriever(
+            driver=driver,
+            llm=llm,
+            tools=[factual_tool, one_hop_tool, multihop_tool],
+            system_instruction=TOOLS_RETRIEVER_SYSTEM_INSTRUCTIONS
+        )
+
+        rag_template = RagTemplate(RAG_TEMPLATE, expected_inputs=["query_text", "context"])
+
+        self.graph_rag = GraphRAG(retriever=tools_retriever, llm=llm, prompt_template=rag_template)
+
+    def search(self, query_text: str, enrich: bool = True, return_context: bool = False, **kwargs):
+
+        if enrich:
+            query_text = self.ner.enrich_query(query_text)
+
+        with get_openai_callback() as cb:
+            res = self.graph_rag.search(
+                query_text=query_text,
+                return_context=return_context,
+                response_fallback="I can not answer this question because I have no relevant context.",
+                retriever_config=kwargs
+            )
+            logging.info(
+                "Input [{input_tk} Tk] | Output [{output_tk} Tk]".format(input_tk=cb.prompt_tokens, output_tk=cb.completion_tokens))
+
+        return res
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
+
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
 
     logger.info("Initializing GraphRAG pipeline")
 
@@ -161,52 +201,35 @@ Genomic Findings (VUS detected):
      (B) similar phenotypes between Cri-du-chat and PLXNA3
     """
 
-    QUERY_TEXT = "Which genes participate in biological process 'Reactome:R-HSA-445095' and are associated with diseases that present phenotype HP:0001328?"
+    QUERY_TEXT = """
+    Case report:
+    The proband (younger brother) in this family had microcephaly (−4 SD), and dysmorphic features including mild 
+    hypertelorism, downturned mouth, coarse facial features, in addition to cryptorchidism, and micropenis. His brother 
+    was also dysmorphic with coarse facial features, microcephaly, ambiguous genitalia, and coarctation of the aorta in 
+    conjunction with a bicuspid aortic valve. Both brothers had severe intellectual disability (non-verbal) and mild 
+    microcytic anemia. The mother is phenotypically normal with no clinical features of the ATR-X syndrome. A 
+    three-generation family history was queried and there was no history of cancer in the family. Both parents are of 
+    Armenian descent and consanguinity was denied. 
 
-    entity_linker = EntityLinkingRetriever(
-        driver=driver, embedder=embedder, llm=ner_llm, entities_model=QueryExtraction, index_map=index_map
-    )
-    linked = entity_linker.get_search_results(query_text=QUERY_TEXT)
+    Pathology review revealed an epithelioid osteosarcoma, primarily composed of cells with oval eccentric nuclei and 
+    voluminous lightly eosinophilic cytoplasm."
 
-    ENRICHED_QUERY_TEXT = entity_linker.build_enriched_query(QUERY_TEXT, linked)
+    Which disease and genes are most likely to be related with these phenotypes? 
+    """
 
-    tools_retriever = ToolsRetriever(
-        driver=driver,
-        llm=llm,
-        tools=[
-            factual_tool,
-            one_hop_tool,
-            multihop_tool,
-            #disease_vector_context_tool,
-            #gene_similarity_tool,
-            #disease_similarity_tool,
-            #disease_context_tool,
-            #got
-        ],
-        system_instruction=TOOLS_RETRIEVER_SYSTEM_INSTRUCTIONS
-    )
 
-    # GraphRAG
-    rag_template = RagTemplate(
-        RAG_TEMPLATE,
-        expected_inputs=["query_text", "context"]
-    )
+    model = DiMonarchKG()
+    print(f"--- USER ---\n"
+          f"{QUERY_TEXT}")
+    answer = model.search(query_text=QUERY_TEXT, return_context=True)
 
-    graph_rag = GraphRAG(
-        retriever=tools_retriever,
-        llm=llm,
-        prompt_template=rag_template
-    )
 
-    # Perform a search
-    res = graph_rag.search(
-        query_text=ENRICHED_QUERY_TEXT,
-        return_context=True,
-        response_fallback="I can not answer this question because I have no relevant context.",
-        retriever_config={'top_k': 5, 'filters': None}
-    )
+    if answer is not None:
+        print(f"\n--- ANSWER ---\n"
+              f"{answer.answer}\n")
 
-    print(f"User: {ENRICHED_QUERY_TEXT}")
-    print(f"Answer: {res.answer}")
+        print(f"\n--- TOOLS RETRIEVER ---\n"
+              f"{answer.retriever_result.metadata['tools_selected']}")
+
 
 

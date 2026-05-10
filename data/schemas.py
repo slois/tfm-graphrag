@@ -24,7 +24,7 @@ CRITICAL RULES:
 
 
 
-MULTIHOP_SCHEMA = """
+NEO4J_SCHEMA = """
 Node types:
 - `biolink:AnatomicalEntity` {id: STRING, category: LIST, name: STRING, description: STRING, provided_by: STRING, deprecated: BOOLEAN, iri: STRING, namespace: STRING, xref: LIST, synonym: LIST, exact_synonym: LIST, broad_synonym: LIST, related_synonym: LIST, subsets: STRING, narrow_synonym: LIST}
 - `biolink:BiologicalProcess` {id: STRING, category: LIST, name: STRING, description: STRING, provided_by: STRING, iri: STRING, namespace: STRING, synonym: LIST, exact_synonym: LIST, narrow_synonym: LIST, broad_synonym: LIST, subsets: STRING, related_synonym: LIST, in_taxon: STRING, xref: LIST}
@@ -40,108 +40,45 @@ Node types:
 
 
 Relationships (use backticks for ALL):
-- `biolink:Gene`-[`biolink:causes`|`biolink:gene_associated_with_condition`|
-   `biolink:contributes_to`|`biolink:genetically_associated_with`]-> `biolink:Disease`
+- `biolink:Gene`-[`biolink:causes`]-> `biolink:Disease`
+- `biolink:Gene`-[`biolink:gene_associated_with_condition`]-> `biolink:Disease`
+- `biolink:Gene`-[`biolink:contributes_to`]-> `biolink:Disease`
+- `biolink:Gene`-[`biolink:genetically_associated_with`]-> `biolink:Disease`
 - `biolink:Gene`-[`biolink:has_phenotype`]-> `biolink:PhenotypicFeature`
 - `biolink:Gene`-[`biolink:orthologous_to`]-> `biolink:Gene`
 - `biolink:Gene`-[`biolink:interacts_with]-> `biolink:Gene`
 - `biolink:Gene`-[`biolink:participates_in`]-> `biolink:Pathway`
-- `biolink:Gene`-[`biolink:actively_involved_in`|`biolink:acts_upstream_of_or_within`|
-    `biolink:acts_upstream_of_or_within_positive_effect`|`biolink:acts_upstream_of`|
-    `biolink:acts_upstream_of_or_within_negative_effect`|`biolink:participates_in`|
-    `biolink:acts_upstream_of_negative_effect`|`biolink:acts_upstream_of_positive_effect`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:actively_involved_in`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of_or_within`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of_or_within_positive_effect`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of_or_within_negative_effect`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:participates_in`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of_negative_effect`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:acts_upstream_of_positive_effect`]-> `biolink:BiologicalProcess`
+- `biolink:Gene`-[`biolink:expressed_in]-> `biolink:AnatomicalEntity`    
 - `biolink:Genotype`-[`biolink:has_phenotype`]-> `biolink:PhenotypicFeature`
 - `biolink:Genotype`-[`biolink:has_sequence_variant`]-> `biolink:SequenceVariant`
 - `biolink:Genotype`-[`biolink:model_of`]-> `biolink:Disease`
 - `biolink:PhenotypicFeature`-[`biolink:subclass_of`]-> `biolink:PhenotypicFeature`
-- `biolink:PhenotypicFeature`-[`biolink:same_as`|`biolink:homologous_to`]-> `biolink:PhenotypicFeature`
+- `biolink:PhenotypicFeature`-[`biolink:same_as`]-> `biolink:PhenotypicFeature`
+- `biolink:PhenotypicFeature`-[`biolink:homologous_to`]-> `biolink:PhenotypicFeature`
 - `biolink:Disease`-[`biolink:has_mode_of_inheritance`]-> `biolink:PhenotypicFeature`
 - `biolink:Disease`-[`biolink:has_phenotype`]-> `biolink:PhenotypicFeature`
 - `biolink:Disease`-[`biolink:disease_has_location`]-> `biolink:AnatomicalEntity`
 - `biolink:Disease`-[`biolink:subclass_of`]-> `biolink:Disease`
-- `biolink:Disease`-[`biolink:has_participant`|`biolink:disrupts`]-> `biolink:BiologicalProcess`
+- `biolink:Disease`-[`biolink:has_participant`]-> `biolink:BiologicalProcess`
+- `biolink:Disease`-[`biolink:disrupts`]-> `biolink:BiologicalProcess`
+- `biolink:Disease`-[`biolink:has_participant`]->:biolink:AnatomicalEntity
 - `biolink:SequenceVariant`-[`biolink:is_sequence_variant_of`]-> `biolink:Gene`
 - `biolink:SequenceVariant`-[`biolink:has_phenotype`] -> `biolink:PhenotypicFeature`
-- `biolink:SequenceVariant`-[`biolink:causes`|`biolink:associated_with_increased_likelihood_of`|`biolink:genetically_associated_with`] -> `biolink:Disease`
+- `biolink:SequenceVariant`-[`biolink:contributes_to`] -> `biolink:PhenotypicFeature`
+- `biolink:SequenceVariant`-[`biolink:causes`] -> `biolink:Disease`
+- `biolink:SequenceVariant`-[`biolink:associated_with_increased_likelihood_of`] -> `biolink:Disease`
+- `biolink:SequenceVariant`-[`biolink:genetically_associated_with`] -> `biolink:Disease`
 - `biolink:Case`-[`biolink:has_gene`]-> `biolink:Gene`
 - `biolink:Case`-[`biolink:has_disease`]-> `biolink:Disease`
 - `biolink:Case`-[`biolink:has_phenotype`]-> `biolink:PhenotypicFeature`
-
-
-Multi-hop rules:
-- subclass_of: child→parent (specific→general)
-- Descendants of X: (d)-[:biolink:subclass_of*0..2]->(X)
-- Ancestors of X: (X)-[:biolink:subclass_of*0..2]->(a)
-- Ontology expansion: (gene_pheno)-[:biolink:subclass_of*0..2]->(query_term)
-- Human genes: in_taxon = 'NCBITaxon:9606'
-- Mouse genes: in_taxon = 'NCBITaxon:10090'
-- Human phenotypes: namespace = 'HP'
-- Mouse phenotypes: namespace = 'MP'
-- LIMIT 50 unless specified
-
-Special instructions:
-
--   Use this:
-    WITH ['HP:0002342', 'HP:0001263', 'HP:0000252'] AS hpo_ids
-    MATCH (q:`biolink:PhenotypicFeature`)
-    WHERE q.id IN hpo_ids
-
-    instead of:
-    MATCH (q1:`biolink:PhenotypicFeature` {id: 'HP:0002342'})
-    MATCH (q2:`biolink:PhenotypicFeature` {id: 'HP:0001263'})
-    MATCH (q3:`biolink:PhenotypicFeature` {id: 'HP:0000252'})
-
-
-
-"""
-# #- `biolink:Disease` -[`biolink:has_participant`|`biolink:disrupts`:`biolink:related_to`]-> `biolink:BiologicalProcess`
-
-
-NEIGHBORHOOD_SCHEMA="""
-Node types:
-- biolink:Gene {id: "HGNC:XXXXX", symbol: STRING, name: STRING, full_name: STRING, in_taxon: STRING}
-- biolink:Disease {id: "MONDO:XXXXXXX", name, description, IRI: STRING}
-- biolink:PhenotypicFeature {id: "HP:XXXXXXX", name: STRING, namespace: STRING, IC_disease: FLOAT, IC_gene: FLOAT}
-- biolink:SequenceVariant {id: STRING, name: STRING}
-- biolink:Case {id: STRING, source: STRING}
-
-Relationships:
-- (:biolink:Gene)-[:biolink:causes|biolink:gene_associated_with_condition|biolink:contributes_to]->(:biolink:Disease)
-- (:biolink:Gene)-[:biolink:has_phenotype]->(:biolink:PhenotypicFeature)
-- (:biolink:Gene)-[:biolink:orthologous_to]->(:biolink:Gene)
-- (:biolink:Gene)-[:biolink:participates_in]->(:biolink:BiologicalProcess)
-- (:biolink:Gene)-[:biolink:participates_in]->(:biolink:Occurrent)
-- (:biolink:Gene)-[:biolink:participates_in]->(:biolink:Pathway)
-- (:biolink:Disease)-[:biolink:has_phenotype]->(:biolink:PhenotypicFeature)
-- (:biolink:Disease)-[:biolink:subclass_of]->(:biolink:Disease)
-- (:biolink:Disease)-[:biolink:has_mode_of_inheritance]->(:biolink:PhenotypicFeature)
-- (:biolink:Disease)-[:biolink:related_to]->(:biolink:Disease)
-- (:biolink:Disease)-[:biolink:related_to]->(:biolink:AnatomicalEntity)
-- (:biolink:Disease)-[:biolink:related_to]->(:biolink:Cell)
-- (:biolink:Disease)-[:biolink:related_to]->(:biolink:BiologicalProcess)
-- (:biolink:Disease)-[:biolink:related_to]->(:biolink:Occurrent)
-- (:biolink:Disease)-[:biolink:disease_has_location]->(:biolink:AnatomicalEntity)
-- (:biolink:Disease)-[:biolink:disease_has_location]->(:biolink:CellularComponent)
-- (:biolink:Disease)-[:biolink:has_participant]->(:biolink:BiologicalProcess)
-- (:biolink:Disease)-[:biolink:has_participant]->(:biolink:Occurrent)
-- (:biolink:Disease)-[:biolink:has_participant]->(:biolink:AnatomicalEntity)
-- (:biolink:Disease)-[:biolink:has_participant]->(:biolink:CellularComponent)
-- (:biolink:Disease)-[:biolink:has_participant]->(:biolink:MolecularActivity)
-- (:biolink:Disease)-[:biolink:disrupts]->(:biolink:BiologicalProcess)
-- (:biolink:Disease)-[:biolink:disrupts]->(:biolink:Occurrent)
-- (:biolink:PhenotypicFeature)-[:biolink:subclass_of]->(:biolink:PhenotypicFeature) (child→parent)
-- (:biolink:PhenotypicFeature)-[:biolink:homologous_to|biolink:same_as]->(:biolink:PhenotypicFeature)
-- (:biolink:SequenceVariant)-[:biolink:is_sequence_variant_of]->(:biolink:Gene)
-- (:biolink:SequenceVariant)-[:biolink:causes]->(:biolink:Disease)
-- (:biolink:SequenceVariant)-[:biolink:associated_with_increased_likelihood_of]->(:biolink:Disease)
-- (:biolink:SequenceVariant)-[:biolink:has_phenotype]->(:biolink:PhenotypicFeature)
-- (:biolink:SequenceVariant)-[:biolink:genetically_associated_with]->(:biolink:Disease)
-- (:biolink:Case)-[:biolink:has_phenotype]->(:biolink:PhenotypicFeature)
-- (:biolink:Case)-[:biolink:has_phenotype]->(:biolink:DiseaseOrPhenotypicFeature)
-- (:biolink:Case)-[:biolink:has_disease]->(:biolink:DiseaseOrPhenotypicFeature)
-- (:biolink:Case)-[:biolink:has_disease]->(:biolink:Disease)
-- (:biolink:Case)-[:biolink:has_disease]->(:biolink:Gene)
-- (:biolink:Case)-[:biolink:has_gene]->(:biolink:Gene)
 """
 
 EXTENDED_NEO4J_SCHEMA="""

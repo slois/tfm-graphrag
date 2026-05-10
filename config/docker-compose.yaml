@@ -1,0 +1,38 @@
+services:
+  neo4j:
+    image: neo4j:enterprise
+    container_name: neo4j_local
+    volumes:
+      - ./logs:/logs
+      - ./data:/data
+      - ./plugins:/plugins
+      - ./import:/import
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/neo4jpassword
+      # 1. ESTO INSTALA EL PLUGIN AUTOMÁTICAMENTE
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      
+      # 2. AJUSTE DE MEMORIA (CRÍTICO PARA GDS)
+      - NEO4J_server_memory_heap_initial__size=4G
+      - NEO4J_server_memory_heap_max__size=6G
+      - NEO4J_dbms_memory_transaction_total_max=0
+      - NEO4J_server_memory_pagecache_size=2G
+      
+      # 3. HABILITAR PROCEDIMIENTOS SIN RESTRICCIONES
+      # Necesario para que GDS pueda escribir en la BBDD
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*,apoc.*
+      - NEO4J_dbms_security_procedures_allowlist=gds.*,apoc.*
+
+      #4. CONFIGURACION DE apoc
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_export_file_enabled=true
+      #      - NEO4J_apoc_import_file_use__neo4j__config=false
+      - NEO4J_server_jvm_additional=--add-modules jdk.incubator.vector
+    user: "${UID}:${GID}"
+
+
+
