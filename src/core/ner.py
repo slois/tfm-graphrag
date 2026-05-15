@@ -1,5 +1,4 @@
 from src.core.entity_linking import MentionExtractor, EntityLinking, EnrichText
-from src.graph.neo4j_client import index_map
 
 
 class NamedEntityRecognition(object):
@@ -19,4 +18,4 @@ class NamedEntityRecognition(object):
                 'biolink:Gene': 'hgnc_ids'
             }
         )
-        return enriched_query
+        return enriched_query, linked.entities

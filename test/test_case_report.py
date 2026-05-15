@@ -1,4 +1,4 @@
-from bin.main import DiMonarchKG
+from src.rag import DiMonarchKG
 
 if __name__ == '__main__':
 

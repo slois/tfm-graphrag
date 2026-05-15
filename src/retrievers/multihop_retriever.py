@@ -8,29 +8,17 @@ from src.graph.neo4j_client import driver
 from src.llms import llm
 
 
-# def multihop_formatter(record) -> RetrieverResultItem:
-#     """
-#     Formatea resultados de queries multi-hop en texto estructurado.
-#     Maneja dinámicamente cualquier combinación de columnas.
-#     """
-#     data = record.data()
-#
-#     # Construir texto limpio desde los campos disponibles
-#     parts = []
-#     for key, value in data.items():
-#         if value is None or value == [] or value == "":
-#             continue
-#         if isinstance(value, list):
-#             clean = [str(v) for v in value if v]
-#             if clean:
-#                 parts.append(f"{key}: {', '.join(clean)}")
-#         else:
-#             parts.append(f"{key}: {value}")
-#
-#     return RetrieverResultItem(
-#         content=" | ".join(parts),
-#         metadata={"raw": data}
-#     )
+def multihop_formatter(record) -> RetrieverResultItem:
+    """
+    Formatea resultados de queries multi-hop en texto estructurado.
+    Maneja dinámicamente cualquier combinación de columnas.
+    """
+    data = record.data()
+
+    return RetrieverResultItem(
+        content=str(record),
+        metadata={"raw": data}
+    )
 
 
 # ── Retriever ──────────────────────────────────────────────────────────────────
@@ -41,6 +29,7 @@ multihop_t2c_retriever = Text2CypherRetriever(
     custom_prompt=MULTIHOP_PROMPT,
     examples=MULTIHOP_EXAMPLES,
     neo4j_database="dimonarchkg",
+    result_formatter=multihop_formatter
 )
 
 if __name__ == "__main__":

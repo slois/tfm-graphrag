@@ -2,7 +2,7 @@ import logging
 import time
 import pandas as pd
 
-from bin.main import DiMonarchKG
+from src.rag import DiMonarchKG
 from test.build_benchmark import BenchmarkDataset, BenchmarkResult, BenchmarkResultItem
 
 if __name__ == '__main__':
