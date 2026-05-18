@@ -66,14 +66,48 @@ GENERAL INSTRUCTIONS:
 - Human phenotypes: namespace = 'HP'
 - Mouse phenotypes: namespace = 'MP'
 - CYPHER query should return a list of triplets (Subject-Predicate-Object). Return:
-    - Subject: id, name, description, category[0]
+    - Subject: id, name, category[0]
     - Relationship: type, publications and primary_knowledge_source
-    - Object: id, name, description, category[0]
-- LIMIT 500 unless specified
+    - Object: id, name, category[0]
+- LIMIT 100 unless specified
 
 BASIC RULES:
 - SEED NODES: Treat all provided identifiers (HGNC, HP, MONDO) as independent entry points. For example, MATCH (seed) WHERE seed.id IN ['HP:0007359','HP:0000961','HP:0010851','HP:0007105','HP:0001254','HGNC:10585','HGNC:10588','HGNC:6296']
 - OPTIONALITY: Always use OPTIONAL MATCH for relationships. This ensures that even if some entities have no connections in the graph, the existing ones are returned anyway.
+
+CRITICAL OUTPUT FORMAT: UNIFIED TRIPLET TABLE
+Whenever your Cypher query matches multiple relationships (e.g., r1, r2, r3) in a path or across multiple MATCH clauses, you MUST NOT return them as separate columns. 
+
+You MUST pivot the results into a unified Triplet Table by constructing a list of maps for each Subject-Relationship-Object pair, and then using UNWIND. 
+
+You MUST extract exactly these properties using aliases:
+- Subject: id, name, category[0]
+- Relationship: type(), publications, primary_knowledge_source
+- Object: id, name, category[0]
+
+Use the `COALESCE()` function for missing properties to prevent null errors.
+
+Example of the REQUIRED RETURN structure:
+...[YOUR MATCH CLAUSES with r1, r2, etc.]...
+WITH [
+  {{sub: d, rel: r1, obj: p}},
+  {{sub: g, rel: r2, obj: d}},
+  {{sub: g, rel: r3, obj: a}}
+] AS all_relationships
+UNWIND all_relationships AS triplet
+RETURN 
+  triplet.sub.id AS Subject_id, 
+  triplet.sub.name AS Subject_name, 
+  triplet.sub.description AS Subject_description, 
+  triplet.sub.category[0] AS Subject_category,
+  type(triplet.rel) AS Relationship_type, 
+  triplet.rel.publications AS Relationship_publications, 
+  triplet.rel.primary_knowledge_source AS Relationship_primary_knowledge_source,
+  triplet.obj.id AS Object_id, 
+  triplet.obj.name AS Object_name, 
+  triplet.obj.description AS Object_description, 
+  triplet.obj.category[0] AS Object_category
+
 
 Schema:
 {schema}
@@ -113,7 +147,7 @@ SPECIFIC RULES:
     - Subject: id, name, category[0]
     - Relationship: type, publications and primary_knowledge_source
     - Object: id, name, category[0]
-- LIMIT 500 unless specified
+- LIMIT 100 unless specified
 
 CRITICAL OUTPUT FORMAT: UNIFIED TRIPLET TABLE
 Whenever your Cypher query matches multiple relationships (e.g., r1, r2, r3) in a path or across multiple MATCH clauses, you MUST NOT return them as separate columns. 

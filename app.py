@@ -1,15 +1,12 @@
+import random
+
 import pandas as pd
 import streamlit as st
-import time
-
-from neo4j_viz import Node, Relationship, VisualizationGraph
 import streamlit.components.v1 as components
 
+from neo4j_viz import Node, Relationship, VisualizationGraph
 from src.rag import DiMonarchKG
-
-# ══════════════════════════════════════════════════════════════════════════════
-# UTILIDADES
-# ══════════════════════════════════════════════════════════════════════════════
+from test.test_case_report import cases
 
 CATEGORY_COLORS = {
     "biolink:Gene": "#6c8cff",
@@ -21,6 +18,27 @@ CATEGORY_COLORS = {
     "biolink:PhenotypicFeature": "#ff9f6c",
 }
 DEFAULT_COLOR = "#888ea8"
+
+TAB_CONFIGS = {
+    "report": "📝 Report",
+    "entities": "🖇️ Entities Identified",
+    "evidence": "🔎 Evidence Paths"
+}
+
+
+def render_tab(key: str, df: pd.DataFrame):
+    if key == "report":
+        st.markdown(res.response.answer)
+
+    elif key == "evidence":
+        st.subheader("Triplets (Subject - Predicate - Object")
+        #st.markdown("### Tripletas (Sujeto - Predicado - Objeto):")
+        st.dataframe(df, use_container_width=True)
+
+    elif key == "entities":
+        st.subheader("Entities Linked")
+        st.dataframe(df, use_container_width=True)
+
 
 
 def retriever_to_neo4j_viz(retriever_result):
@@ -108,7 +126,6 @@ if __name__ == '__main__':
     # GraphRAG ---------------
     rag = DiMonarchKG()
 
-
     # Page configuration -----
     st.set_page_config(
         page_title="Clinical GraphRAG",
@@ -118,39 +135,38 @@ if __name__ == '__main__':
 
     # Side bar ---------------
     with st.sidebar:
-        st.title("Configuración")
+        st.logo("img/uoc.png")
+        st.title("Clinical GraphRAG")
         st.markdown("Ajustes del motor de razonamiento")
-
         llm_model = st.selectbox("Generative model", ["GPT-5.4"])
         temperature  = st.slider("Temperature (Creativity vs. Precision)", 0.0, 1.0, 0.0, 0.1)
         graph_height = st.slider("Graph height (px)", 300, 900, 520, 50)
         st.divider()
-        st.caption("Proyecto TFM - Clinical GraphRAG")
+        st.caption("""
+        This work presents the design, implementation and evaluation of *Clinical GraphRAG*, a *Graph Retrieval-Augmented Generation* architecture for diagnostic decision support in neurodevelopmental disorders. 
+        The system operates on DIMonarchKG, a domain-specific biomedical knowledge graph derived from the public MonarchKG resource.
+        """)
+        st.divider()
+        st.caption("Data Science Master's Disseration. Universitat Oberta de Catalunya")
+        st.caption("Author: Sergio Lois, PhD")
 
     # Main area --------------
     st.title("🧬 Clinical GraphRAG")
-    st.markdown("""
-    Sistema de priorización de genes e interpretación de variantes basado en grafos de conocimiento. 
-    Introduce los datos fenotípicos (términos HPO) y/o clínicos del paciente para obtener un informe.
-    """)
-
     # --- ENTRADA DE DATOS ---
-    col1, col2 = st.columns([2, 1])
+    main_col, graph_col = st.columns([1, 1])
 
-    with col1:
+    with main_col:
         caso_clinico = st.text_area(
-            "Descripción Clínica / Fenotipo (Términos HPO)",
-            height=150,
-            placeholder="Ej: Paciente con retraso global del desarrollo (HP:0001263), convulsiones atónicas (HP:0010819) y puente nasal ancho (HP:0000431)..."
+            "Clinical description",
+            height=200,
+            placeholder="""A pediatric patient presented with moderate intellectual disability, global developmental delay, and microcephaly. The neonatal history was notable for a characteristic high-pitched, cat-like cry. Physical examination revealed facial dysmorphism including hypertelorism and micrognathia.
+
+- Which disease are most likely to be related with these phenotypes and which genes are associated to them?
+            """
         )
+        launch_button = st.button("🧠 Launch GraphRAG", type="primary", use_container_width=True)
 
-    with col2:
-        genes_candidatos = st.text_input("Genes candidatos / VUS (Opcional)", placeholder="Ej: SLC6A1, SCN8A...")
-        tipo_analisis = st.radio("Tipo de consulta", ["Priorización de genes", "Explicación de variante"])
-
-    # --- BOTÓN DE EJECUCIÓN ---
-    if st.button("🧠 Ejecutar Razonamiento GraphRAG", type="primary", use_container_width=True):
-
+    if launch_button:
         if not caso_clinico:
             st.warning("⚠️ Por favor, introduce la descripción clínica del paciente.")
         else:
@@ -160,62 +176,51 @@ if __name__ == '__main__':
                 query = f"""
                 Case report:
                 {caso_clinico}
-                
-                Candidate genes:
-                {genes_candidatos}
                 """
 
                 res = rag.search(query, return_context=True)
 
-                context_items = []
-                for item in res.response.retriever_result.items:
-                    context_items.append(item.metadata['raw'])
-                context_df = pd.DataFrame(context_items)
+                if len(res.response.retriever_result.items) > 0:
+                    context_items = []
+                    for item in res.response.retriever_result.items:
+                        context_items.append(item.metadata['raw'])
+
+                    # Context dataframe
+                    context_df = pd.DataFrame(context_items)
+                else:
+                    context_df = None
+
+                # Entities dataframe
+                if len(res.linked) > 0:
+                    entities_linked_df = pd.DataFrame(
+                        data=[dict(mention=item.mention, **item.selected.dict()) for item in res.linked if item.selected is not None])
+                else:
+                    entities_linked_df = None
+
+                results = {
+                    'report': res.response.answer,
+                    'evidence': context_df,
+                    'entities': entities_linked_df,
+                }
 
             # --- MOSTRAR RESULTADOS EN PESTAÑAS ---
-            st.success("Análisis completado.")
+            with main_col:
+                st.success("Análisis completado.")
 
-            tab_entities, tab_informe, tab_evidencia, tab_grafo = st.tabs([
-                "🔍 Entities Identified",
-                "📝 Informe Diagnóstico",
-                "🔍 Evidencia (Caja de Cristal)",
-                "🕸️ Visualización del Grafo"
-            ])
+            available_tabs = [tab for tab, res in results.items() if res is not None]
 
-            with tab_entities:
-                st.markdown("### Entities linked")
-                st.markdown(res.query)
-                #linked_data = []
-                #for item in res.linked:
-                #    linked_data.append(item.selected)
-                #st.dataframe(pd.DataFrame(linked_data))
+            tab_objects = st.tabs([TAB_CONFIGS[tab_key] for tab_key in available_tabs])
 
+            for tab, label in zip(tab_objects, available_tabs):
+                with tab:
+                    render_tab(label, results[label])
 
-            with tab_informe:
-                st.markdown(res.response.answer)
+            with graph_col: #tab_grafo:
+                st.markdown('<p class="section-header">Subgraph</p>', unsafe_allow_html=True)
 
-            with tab_evidencia:
-                st.markdown("### Tripletas (Sujeto - Predicado - Objeto):")
-                st.dataframe(context_df)
-
-            # with tab_grafo:
-            #     st.markdown(
-            #         "*(Opcional)* Aquí puedes integrar librerías como `streamlit-agraph` o `pyvis` para renderizar visualmente los nodos interactivos.")
-        # ── TAB: Grafo (neo4j-viz) ────────────────────────────────────────────────
-            with tab_grafo:
-                st.markdown('<p class="section-header">Subgraph — neo4j-viz</p>',
-                            unsafe_allow_html=True)
-
-                # ── Construir y renderizar el grafo ───────────────────────────
                 vg = retriever_to_neo4j_viz(res.response.retriever_result)
                 html_obj = vg.render()  # IPython.display.HTML
                 components.html(html_obj.data, height=graph_height, scrolling=False)
 
-                # ── Leyenda de categorías ─────────────────────────────────────
                 st.markdown("**Categorías**")
                 render_legend(res.response.retriever_result)
-
-                # ── Tabla de relaciones del subgrafo ──────────────────────────
-                #st.markdown("**Relaciones**")
-                #rel_df = df[["subject", "relationship", "object", "source_kb"]]
-                #st.dataframe(rel_df, use_container_width=True, height=200)

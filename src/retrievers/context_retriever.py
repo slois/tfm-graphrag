@@ -8,6 +8,18 @@ from src.graph.neo4j_client import driver
 from src.llms import llm, llm
 
 
+def formatter(record) -> RetrieverResultItem:
+    """
+    Formatea resultados de queries multi-hop en texto estructurado.
+    Maneja dinámicamente cualquier combinación de columnas.
+    """
+    data = record.data()
+
+    return RetrieverResultItem(
+        content=str(record),
+        metadata={"raw": data}
+    )
+
 # def neighborhood_formatter(record) -> RetrieverResultItem:
 #     data = record.data()
 #
@@ -63,11 +75,11 @@ t2c_context_retriever = Text2CypherRetriever(
     llm=llm,
     custom_prompt=TEXT_TO_CYPHER_PROMPT,
     neo4j_schema=NEO4J_SCHEMA,
-    examples=NEIGHBORHOOD_EXAMPLES
-    #result_formatter=neighborhood_formatter
+    examples=NEIGHBORHOOD_EXAMPLES,
+    result_formatter=formatter
 )
 
 if __name__ == '__main__':
     query_text="Which phenotypes of 'neurofibromatosis type 1' are not associated to 'chromosome 17q11.2 deletion syndrome, 1.4Mb'? Sort phenotypes by IC_disease"
     res = t2c_context_retriever.search(query_text=query_text)
-    print(res.metadata['cypher'])
+    print(res)

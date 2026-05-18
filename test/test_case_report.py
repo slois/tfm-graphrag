@@ -1,8 +1,6 @@
 from src.rag import DiMonarchKG
 
-if __name__ == '__main__':
-
-    cases = [
+cases = [
         {
             'id': 'C01',
             'case_report': """A pediatric patient presented with moderate intellectual disability, global developmental 
@@ -124,6 +122,8 @@ if __name__ == '__main__':
             'doi': 'synthetic'
         }
     ]
+
+if __name__ == '__main__':
 
     model = DiMonarchKG()
 
